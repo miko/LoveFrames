@@ -6,6 +6,7 @@
 -- get the current require path
 local path = string.sub(..., 1, string.len(...) - string.len(".objects.textinput"))
 local loveframes = require(path .. ".libraries.common")
+local utf8 = require(path .. ".libraries.utf8")
 
 -- textinput object
 local newobject = loveframes.NewObject("textinput", "loveframes_object_textinput", true)
@@ -152,7 +153,7 @@ function newobject:update(dt)
 		for k, v in ipairs(lines) do
 			local linewidth = 0
 			if masked then
-				linewidth = font:getWidth(v:gsub(".", maskchar))
+				linewidth = font:getWidth(utf8.gsub(v, ".", maskchar))
 			else
 				linewidth = font:getWidth(v)
 			end
@@ -547,8 +548,8 @@ end
 --]]---------------------------------------------------------
 function newobject:textinput(text)
 
-	if text:find("kp.") then
-		text = text:gsub("kp", "")
+	if utf8.find(text, "kp.") then
+		text = utf8.gsub(text, "kp", "")
 	end
 		
 	self:RunKey(text, true)
@@ -598,7 +599,7 @@ function newobject:RunKey(key, istext)
 				self:MoveIndicator(-1)
 				local indicatorx = self.indicatorx
 				if indicatorx <= x and indicatornum ~= 0 then
-					local width = font:getWidth(text:sub(indicatornum, indicatornum + 1))
+					local width = font:getWidth(utf8.sub(text, indicatornum, indicatornum + 1))
 					self.offsetx = offsetx - width
 				elseif indicatornum == 0 and offsetx ~= 0 then
 					self.offsetx = 0
@@ -607,7 +608,7 @@ function newobject:RunKey(key, istext)
 				if indicatornum == 0 then
 					if line > 1 then
 						self.line = line - 1
-						local numchars = string.len(lines[self.line])
+						local numchars = utf8.len(lines[self.line])
 						self:MoveIndicator(numchars)
 					end
 				else
@@ -625,14 +626,14 @@ function newobject:RunKey(key, istext)
 			if not multiline then
 				self:MoveIndicator(1)
 				local indicatorx = self.indicatorx
-				if indicatorx >= (x + swidth) and indicatornum ~= string.len(text) then
-					local width = font:getWidth(text:sub(indicatornum, indicatornum))
+				if indicatorx >= (x + swidth) and indicatornum ~= utf8.len(text) then
+					local width = font:getWidth(utf8.sub(text, indicatornum, indicatornum))
 					self.offsetx = offsetx + width
-				elseif indicatornum == string.len(text) and offsetx ~= ((font:getWidth(text)) - swidth + 10) and font:getWidth(text) + textoffsetx > swidth then
+				elseif indicatornum == utf8.len(text) and offsetx ~= ((font:getWidth(text)) - swidth + 10) and font:getWidth(text) + textoffsetx > swidth then
 					self.offsetx = ((font:getWidth(text)) - swidth + 10)
 				end
 			else
-				if indicatornum == string.len(text) then
+				if indicatornum == utf8.len(text) then
 					if line < numlines then
 						self.line = line + 1
 						self:MoveIndicator(0, true)
@@ -643,7 +644,7 @@ function newobject:RunKey(key, istext)
 			end
 			if alltextselected then
 				self.line = #lines
-				self.indicatornum = string.len(lines[#lines])
+				self.indicatornum = utf8.len(lines[#lines])
 				self.alltextselected = false
 			end
 			return
@@ -651,8 +652,8 @@ function newobject:RunKey(key, istext)
 			if multiline then
 				if line > 1 then
 					self.line = line - 1
-					if indicatornum > string.len(lines[self.line]) then
-						self.indicatornum = string.len(lines[self.line])
+					if indicatornum > utf8.len(lines[self.line]) then
+						self.indicatornum = utf8.len(lines[self.line])
 					end
 				end
 			end
@@ -661,8 +662,8 @@ function newobject:RunKey(key, istext)
 			if multiline then
 				if line < #lines then
 					self.line = line + 1
-					if indicatornum > string.len(lines[self.line]) then
-						self.indicatornum = string.len(lines[self.line])
+					if indicatornum > utf8.len(lines[self.line]) then
+						self.indicatornum = utf8.len(lines[self.line])
 					end
 				end
 			end
@@ -692,12 +693,12 @@ function newobject:RunKey(key, istext)
 						local oldtext = lines[line]
 						table.remove(lines, line)
 						self.line = line - 1
-						if string.len(oldtext) > 0 then
-							newindicatornum = string.len(lines[self.line])
+						if utf8.len(oldtext) > 0 then
+							newindicatornum = utf8.len(lines[self.line])
 							lines[self.line] = lines[self.line] .. oldtext
 							self:MoveIndicator(newindicatornum)
 						else
-							self:MoveIndicator(string.len(lines[self.line]))
+							self:MoveIndicator(utf8.len(lines[self.line]))
 						end
 					end
 				end
@@ -705,9 +706,9 @@ function newobject:RunKey(key, istext)
 				local cwidth = 0
 				if masked then
 					local maskchar = self.maskchar
-					cwidth = font:getWidth(text:sub(string.len(text)):gsub(".", maskchar))
+					cwidth = font:getWidth(utf8.gsub(utf8.sub(text, utf8.len(text)), ".", maskchar))
 				else
-					cwidth = font:getWidth(text:sub(string.len(text)))
+					cwidth = font:getWidth(utf8.sub(text, utf8.len(text)))
 				end
 				if self.offsetx > 0 then
 					self.offsetx = self.offsetx - cwidth
@@ -725,13 +726,13 @@ function newobject:RunKey(key, istext)
 				self.alltextselected = false
 				indicatornum = self.indicatornum
 			else
-				if text ~= "" and indicatornum < string.len(text) then
+				if text ~= "" and indicatornum < utf8.len(text) then
 					text = self:RemoveFromText(indicatornum + 1)
 					lines[line] = text
-				elseif indicatornum == string.len(text) and line < #lines then
+				elseif indicatornum == utf8.len(text) and line < #lines then
 					local oldtext = lines[line + 1]
-					if string.len(oldtext) > 0 then
-						newindicatornum = string.len(lines[self.line])
+					if utf8.len(oldtext) > 0 then
+						newindicatornum = utf8.len(lines[self.line])
 						lines[self.line] = lines[self.line] .. oldtext
 					end
 					table.remove(lines, line + 1)
@@ -755,9 +756,9 @@ function newobject:RunKey(key, istext)
 				if indicatornum == 0 then
 					newtext = self.lines[line]
 					self.lines[line] = ""
-				elseif indicatornum > 0 and indicatornum < string.len(self.lines[line]) then
-					newtext = self.lines[line]:sub(indicatornum + 1, string.len(self.lines[line]))
-					self.lines[line] = self.lines[line]:sub(1, indicatornum)
+				elseif indicatornum > 0 and indicatornum < utf8.len(self.lines[line]) then
+					newtext = utf8.sub(self.lines[line], indicatornum + 1, utf8.len(self.lines[line]))
+					self.lines[line] = utf8.sub(self.lines[line], 1, indicatornum)
 				end
 				if line ~= #lines then
 					table.insert(self.lines, line + 1, newtext)
@@ -778,14 +779,14 @@ function newobject:RunKey(key, istext)
 			end
 			ckey = key
 			self.lines[self.line] = self:AddIntoText(self.tabreplacement, self.indicatornum)
-			self:MoveIndicator(string.len(self.tabreplacement))
+			self:MoveIndicator(utf8.len(self.tabreplacement))
 		end
 	else
 		if not editable then
 			return
 		end
 		-- do not continue if the text limit has been reached or exceeded
-		if string.len(text) >= self.limit and self.limit ~= 0 and not alltextselected then
+		if utf8.len(text) >= self.limit and self.limit ~= 0 and not alltextselected then
 			return
 		end
 		-- check for unusable characters
@@ -820,11 +821,11 @@ function newobject:RunKey(key, istext)
 			lines = self.lines
 			line = self.line
 		end
-		if indicatornum ~= 0 and indicatornum ~= string.len(text) then
+		if indicatornum ~= 0 and indicatornum ~= utf8.len(text) then
 			text = self:AddIntoText(key, indicatornum)
 			lines[line] = text
 			self:MoveIndicator(1)
-		elseif indicatornum == string.len(text) then
+		elseif indicatornum == utf8.len(text) then
 			text = text .. key
 			lines[line] = text
 			self:MoveIndicator(1)
@@ -843,8 +844,8 @@ function newobject:RunKey(key, istext)
 			local cwidth = 0
 			if masked then
 				local maskchar = self.maskchar
-				twidth = font:getWidth(text:gsub(".", maskchar))
-				cwidth = font:getWidth(key:gsub(".", maskchar))
+				twidth = font:getWidth(utf8.gsub(text, ".", maskchar))
+				cwidth = font:getWidth(utf8.gsub(key, ".", maskchar))
 			else
 				twidth = font:getWidth(text)
 				cwidth = font:getWidth(key)
@@ -883,8 +884,8 @@ function newobject:MoveIndicator(num, exact)
 		self.indicatornum = num
 	end
 	
-	if self.indicatornum > string.len(text) then
-		self.indicatornum = string.len(text)
+	if self.indicatornum > utf8.len(text) then
+		self.indicatornum = utf8.len(text)
 	elseif self.indicatornum < 0 then
 		self.indicatornum = 0
 	end
@@ -944,7 +945,7 @@ function newobject:UpdateIndicator()
 			local char = self.maskchar
 			width = width + font:getWidth(char)
 		else
-			local char = text:sub(i, i)
+			local char = utf8.sub(text, i, i)
 			width = width + font:getWidth(char)
 		end
 	end
@@ -974,7 +975,7 @@ function newobject:UpdateIndicator()
 				for k, v in ipairs(lines) do
 					local linewidth = 0
 					if self.masked then
-						linewidth = font:getWidth(v:gsub(".", self.maskchar))
+						linewidth = font:getWidth(utf8.gsub(v, ".", self.maskchar))
 					else
 						linewidth = font:getWidth(v)
 					end
@@ -1021,8 +1022,8 @@ function newobject:AddIntoText(t, p)
 	local line = self.line
 	local curline = lines[line]
 	local text = curline
-	local part1 = text:sub(1, p)
-	local part2 = text:sub(p + 1)
+	local part1 = utf8.sub(text, 1, p)
+	local part2 = utf8.sub(text, p + 1)
 	local new = part1 .. t .. part2
 	
 	return new
@@ -1040,8 +1041,8 @@ function newobject:RemoveFromText(p)
 	local line = self.line
 	local curline = lines[line]
 	local text = curline
-	local part1 = text:sub(1, p - 1)
-	local part2 = text:sub(p + 1)
+	local part1 = utf8.sub(text, 1, p - 1)
+	local part2 = utf8.sub(text, p + 1)
 	local new = part1 .. part2
 	return new
 	
@@ -1094,8 +1095,8 @@ function newobject:GetTextCollisions(x, y)
 			end
 			local line = self.line
 			local curline = lines[line]
-			for i=1, string.len(curline) do
-				local char = text:sub(i, i)
+			for i=1, utf8.len(curline) do
+				local char = utf8.sub(text, i, i)
 				local width = 0
 				if masked then
 					local maskchar = self.maskchar
@@ -1114,7 +1115,7 @@ function newobject:GetTextCollisions(x, y)
 					self:MoveIndicator(i - 1, true)
 					break
 				else
-					self.indicatornum = string.len(curline)
+					self.indicatornum = utf8.len(curline)
 				end
 				
 				if x < tx then
@@ -1122,17 +1123,17 @@ function newobject:GetTextCollisions(x, y)
 				end
 				
 				if x > (tx + width) then
-					self:MoveIndicator(string.len(curline), true)
+					self:MoveIndicator(utf8.len(curline), true)
 				end
 			end
 			
-			if string.len(curline) == 0 then
+			if utf8.len(curline) == 0 then
 				self.indicatornum = 0
 			end
 		end
 	else
-		for i=1, string.len(text) do
-			local char = text:sub(i, i)
+		for i=1, utf8.len(text) do
+			local char = utf8.sub(text, i, i)
 			local width = 0
 			if masked then
 				local maskchar = self.maskchar
@@ -1153,7 +1154,7 @@ function newobject:GetTextCollisions(x, y)
 				self:MoveIndicator(0, true)
 			end
 			if x > (tx + width) then
-				self:MoveIndicator(string.len(text), true)
+				self:MoveIndicator(utf8.len(text), true)
 			end
 		end
 	end
@@ -1371,25 +1372,25 @@ function newobject:SetText(text)
 	local multiline = self.multiline
 	
 	text = tostring(text)
-	text = text:gsub(string.char(9), tabreplacement)
-	text = text:gsub(string.char(13), "")
+	text = utf8.gsub(text, utf8.char(9), tabreplacement)
+	text = utf8.gsub(text, utf8.char(13), "")
 	
 	if multiline then
-		text = text:gsub(string.char(92) .. string.char(110), string.char(10))
-		local t = loveframes.util.SplitString(text, string.char(10))
+		text = utf8.gsub(text, utf8.char(92) .. utf8.char(110), utf8.char(10))
+		local t = loveframes.util.SplitString(text, utf8.char(10))
 		if #t > 0 then
 			self.lines = t
 		else
 			self.lines = {""}
 		end
 		self.line = #self.lines
-		self.indicatornum = string.len(self.lines[#self.lines])
+		self.indicatornum = utf8.len(self.lines[#self.lines])
 	else
-		text = text:gsub(string.char(92) .. string.char(110), "")
-		text = text:gsub(string.char(10), "")
+		text = utf8.gsub(text, utf8.char(92) .. utf8.char(110), "")
+		text = utf8.gsub(text, utf8.char(10), "")
 		self.lines = {text}
 		self.line = 1
-		self.indicatornum = string.len(text)
+		self.indicatornum = utf8.len(text)
 	end
 	
 	return self
@@ -1905,13 +1906,13 @@ function newobject:Paste()
 	
 	if limit > 0 then
 		local curtext = self:GetText()
-		local curlength = curtext:len()
+		local curlength = utf8.len(curtext)
 		if curlength == limit then
 			return
 		else
 			local inputlimit = limit - curlength
-			if text:len() > inputlimit then
-				text = text:sub(1, inputlimit)
+			if utf8.len(text) > inputlimit then
+				text = utf8.sub(text, 1, inputlimit)
 			end
 		end
 	end
@@ -1927,7 +1928,7 @@ function newobject:Paste()
 		end
 	end
 	if #usable > 0 or #unusable > 0 then
-		text = text:gsub(".", charcheck)
+		text = utf8.gsub(text, ".", charcheck)
 	end
 	if alltextselected then
 		self:SetText(text)
@@ -1941,21 +1942,21 @@ function newobject:Paste()
 		local lines = self.lines
 		local multiline = self.multiline
 		if multiline then
-			local parts = loveframes.util.SplitString(text, string.char(10))
+			local parts = loveframes.util.SplitString(text, utf8.char(10))
 			local numparts = #parts
 			local oldlinedata = {}
 			local line = self.line
-			local first = lines[line]:sub(0, indicatornum)
-			local last = lines[line]:sub(indicatornum + 1)
+			local first = utf8.sub(lines[line], 0, indicatornum)
+			local last = utf8.sub(lines[line], indicatornum + 1)
 			if numparts > 1 then
 				for i=1, numparts do
-					local part = parts[i]:gsub(string.char(13),  "")
-					part = part:gsub(string.char(9), "    ")
+					local part = utf8.gsub(parts[i], utf8.char(13),  "")
+					part = utf8.gsub(part, utf8.char(9), "    ")
 					if i ~= 1 then
 						table.insert(oldlinedata, lines[line])
 						lines[line] = part
 						if i == numparts then
-							self.indicatornum = part:len()
+							self.indicatornum = utf8.len(part)
 							lines[line] = lines[line] .. last
 							self.line = line
 						end
@@ -1972,10 +1973,10 @@ function newobject:Paste()
 					ontextchanged(self, text)
 				end
 			elseif numparts == 1 then
-				text = text:gsub(string.char(10), " ")
-				text = text:gsub(string.char(13), " ")
-				text = text:gsub(string.char(9), tabreplacement)
-				local length = text:len()
+				text = utf8.gsub(text, utf8.char(10), " ")
+				text = utf8.gsub(text, utf8.char(13), " ")
+				text = utf8.gsub(text, utf8.char(9), tabreplacement)
+				local length = utf8.len(text)
 				local new = first .. text .. last
 				lines[line] = new
 				self.indicatornum = indicatornum + length
@@ -1984,13 +1985,13 @@ function newobject:Paste()
 				end
 			end
 		else
-			text = text:gsub(string.char(10), " ")
-			text = text:gsub(string.char(13), " ")
-			text = text:gsub(string.char(9), tabreplacement)
-			local length = text:len()
+			text = utf8.gsub(text, utf8.char(10), " ")
+			text = utf8.gsub(text, utf8.char(13), " ")
+			text = utf8.gsub(text, utf8.char(9), tabreplacement)
+			local length = utf8.len(text)
 			local linetext = lines[1]
-			local part1 = linetext:sub(1, indicatornum)
-			local part2 = linetext:sub(indicatornum + 1)
+			local part1 = utf8.sub(linetext, 1, indicatornum)
+			local part2 = utf8.sub(linetext, indicatornum + 1)
 			local new = part1 .. text .. part2
 			lines[1] = new
 			self.indicatornum = indicatornum + length

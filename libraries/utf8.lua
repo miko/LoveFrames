@@ -1029,23 +1029,7 @@ local function utf8gsub(str, regex, repl, limit)
 	return ret .. utf8sub(str, prevEnd), n 
 end
 
-string.byte    = utf8unicode
-string.char    = utf8char
-string.dump    = dump
-string.find    = utf8find
-string.format  = format
-string.gmatch  = utf8gmatch
-string.gsub    = utf8gsub
-string.len     = utf8len
-string.lower   = lower--utf8lower
-string.match   = utf8match
-string.rep     = rep
-string.reverse = utf8reverse
-string.sub     = utf8sub
-string.upper   = upper--utf8upper
-string.gensub  = utf8gensub
-
---[[ local utf8 = {}                                                                                             
+local utf8 = {}                                                                                             
 utf8.len = utf8len
 utf8.sub = utf8sub
 utf8.reverse = utf8reverse
@@ -1062,4 +1046,4 @@ utf8.format = format
 utf8.lower = lower      
 utf8.upper = upper      
 utf8.rep     = rep
-return utf8 ]]
+return utf8
