@@ -24,6 +24,7 @@ loveframes.config["INDEXSKINIMAGES"] = true
 loveframes.config["DEBUG"] = false
 loveframes.config["ENABLE_SYSTEM_CURSORS"] = true
 loveframes.config["ENABLE_UTF8_SUPPORT"] = false
+loveframes.config["TOUCHSCREEN"] = false
 
 -- misc library vars
 loveframes.state = "none"
@@ -49,6 +50,11 @@ if loveframes.config["ENABLE_SYSTEM_CURSORS"] then
 	if love.mouse.hasCursor and not love.mouse.hasCursor() then
 		loveframes.config["ENABLE_SYSTEM_CURSORS"] = false
 	end
+end
+
+-- try to detect touchscreen device
+if love.system.getOS() == "Android" then
+	loveframes.config["TOUCHSCREEN"] = true
 end
 
 -- install directory of the library
@@ -214,6 +220,15 @@ function loveframes.mousepressed(x, y, button)
 	local base = loveframes.base
 	base:mousepressed(x, y, button)
 	
+	-- touchscreen workaround: First tap will only set an object into hover state
+	-- therefore fake a second tap to trigger the actual action
+	if loveframes.config["TOUCHSCREEN"] then
+		loveframes.update(1)
+		base:mousereleased(x, y, nil)
+		loveframes.update(1)
+		base:mousepressed(x, y, button)
+	end
+
 	-- close open menus
 	local bchildren = base.children
 	local hoverobject = loveframes.hoverobject
